@@ -1,0 +1,101 @@
+{
+  "last_updated": "2026-02-01 22:00:00",
+  "today_view": {
+    "date": "2026-02-01",
+    "maturing_amount": 5000,
+    "injection_amount": 1000,
+    "net_injection": -4000,
+    "maturing_ops": [
+      {
+        "ann_date": "2026-01-26",
+        "trade_type": "逆回购",
+        "tool_type": "REPO",
+        "amount": 5000,
+        "term_days": 7,
+        "term_months": null,
+        "raw_duration": "7天",
+        "maturity_date": "2026-02-01",
+        "is_weekend": false
+      }
+    ],
+    "injection_ops": [
+      {
+        "ann_date": "2026-02-01",
+        "trade_type": "MLF",
+        "tool_type": "MLF",
+        "amount": 1000,
+        "term_days": null,
+        "term_months": 1,
+        "raw_duration": "1个月",
+        "maturity_date": "2026-03-01",
+        "is_weekend": false
+      }
+    ]
+  },
+  "calendar_view": [
+    {"date": "2026-02-01", "maturing_amount": 5000, "is_holiday": false},
+    {"date": "2026-02-02", "maturing_amount": 0, "is_holiday": true},
+    {"date": "2026-02-03", "maturing_amount": 0, "is_holiday": true},
+    {"date": "2026-02-04", "maturing_amount": 1000, "is_holiday": false},
+    {"date": "2026-02-05", "maturing_amount": 0, "is_holiday": false},
+    {"date": "2026-02-06", "maturing_amount": 2000, "is_holiday": false},
+    {"date": "2026-02-07", "maturing_amount": 0, "is_holiday": false},
+    {"date": "2026-02-08", "maturing_amount": 0, "is_holiday": true},
+    {"date": "2026-02-09", "maturing_amount": 3000, "is_holiday": false},
+    {"date": "2026-02-10", "maturing_amount": 0, "is_holiday": false},
+    {"date": "2026-02-11", "maturing_amount": 0, "is_holiday": true},
+    {"date": "2026-02-12", "maturing_amount": 0, "is_holiday": false},
+    {"date": "2026-02-13", "maturing_amount": 1500, "is_holiday": false},
+    {"date": "2026-02-14", "maturing_amount": 0, "is_holiday": true},
+    {"date": "2026-02-15", "maturing_amount": 0, "is_holiday": true},
+    {"date": "2026-02-16", "maturing_amount": 0, "is_holiday": false},
+    {"date": "2026-02-17", "maturing_amount": 2500, "is_holiday": false},
+    {"date": "2026-02-18", "maturing_amount": 0, "is_holiday": false},
+    {"date": "2026-02-19", "maturing_amount": 4000, "is_holiday": false},
+    {"date": "2026-02-20", "maturing_amount": 0, "is_holiday": false},
+    {"date": "2026-02-21", "maturing_amount": 0, "is_holiday": false},
+    {"date": "2026-02-22", "maturing_amount": 1800, "is_holiday": false},
+    {"date": "2026-02-23", "maturing_amount": 0, "is_holiday": true},
+    {"date": "2026-02-24", "maturing_amount": 0, "is_holiday": true},
+    {"date": "2026-02-25", "maturing_amount": 3200, "is_holiday": false},
+    {"date": "2026-02-26", "maturing_amount": 0, "is_holiday": false},
+    {"date": "2026-02-27", "maturing_amount": 0, "is_holiday": false},
+    {"date": "2026-02-28", "maturing_amount": 0, "is_holiday": false},
+    {"date": "2026-03-01", "maturing_amount": 1000, "is_holiday": false}
+  ],
+  "all_operations": [
+    {
+      "ann_date": "2026-01-26",
+      "trade_type": "逆回购",
+      "tool_type": "REPO",
+      "amount": 5000,
+      "term_days": 7,
+      "term_months": null,
+      "raw_duration": "7天",
+      "maturity_date": "2026-02-01",
+      "is_weekend": false
+    },
+    {
+      "ann_date": "2026-01-28",
+      "trade_type": "MLF",
+      "tool_type": "MLF",
+      "amount": 1000,
+      "term_days": null,
+      "term_months": 1,
+      "raw_duration": "1个月",
+      "maturity_date": "2026-03-01",
+      "is_weekend": false
+    },
+    {
+      "ann_date": "2026-01-30",
+      "trade_type": "买断式逆回购",
+      "tool_type": "OUTRIGHT",
+      "amount": 2000,
+      "term_days": 14,
+      "term_months": null,
+      "raw_duration": "14天",
+      "maturity_date": "2026-02-04",
+      "is_weekend": false
+    }
+  ]
+}
