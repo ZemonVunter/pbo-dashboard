@@ -1,186 +1,150 @@
 #!/usr/bin/env python3
 """
-PBOC 货币政策数据抓取与计算引擎
-数据源：Tushare
+PBOC 货币政策数据抓取与计算引擎（模拟版本）
+数据源：模拟数据（用于测试界面）
 功能：
-1. 获取央行公开市场操作数据
+1. 模拟获取央行公开市场操作数据
 2. 计算到期日（节假日顺延）
 3. 生成前端所需数据
 """
 
 import json
 import os
-from datetime import datetime, timedelta
-from chinese_calendar import is_holiday, is_workday
+from datetime import datetime, timedelta, date
 
-# Tushare 配置（从环境变量读取，生产环境应从配置文件读取）
-TUSHARE_TOKEN = "2876ea85cb005fb5fa17c809a98174f2d5aae8b1f830110a5ead6211"
+# 简化的节假日判断（2026年中国法定节假日）
+def is_holiday(date_obj: datetime) -> bool:
+    """判断是否是节假日（简化版）"""
+    year = date_obj.year
+    month = date_obj.month
+    day = date_obj.day
+    
+    # 固定节假日
+    holidays = [
+        # 元旦
+        (1, 1),
+        # 春节（2026年：1月28日-2月3日）
+        (1, 28), (1, 29), (1, 30), (1, 31),
+        (2, 1), (2, 2), (2, 3),
+        # 清明节
+        (4, 4), (4, 5), (4, 6),
+        # 劳动节
+        (5, 1), (5, 2), (5, 3),
+        # 端午节
+        (6, 19), (6, 20), (6, 21),
+        # 中秋节
+        (9, 25), (9, 26), (9, 27),
+        # 国庆节
+        (10, 1), (10, 2), (10, 3), (10, 4), (10, 5), (10, 6), (10, 7),
+    ]
+    
+    return (month, day) in holidays
+
+def is_workday(date_obj: datetime) -> bool:
+    """判断是否是工作日"""
+    # 周末不是工作日
+    if date_obj.weekday() >= 5:  # 5=Saturday, 6=Sunday
+        return False
+    
+    # 节假日不是工作日
+    return not is_holiday(date_obj)
 
 class PBOCDataManager:
-    """央行货币政策数据管理器"""
+    """央行货币政策数据管理器（模拟版本）"""
 
-    def __init__(self, token: str):
-        self.token = token
+    def __init__(self):
         self.operations = []
-        self.holiday_cache = set()
 
-    def fetch_pbo_operations(self, start_date: str = "20240101", end_date: str = None) -> list:
+    def fetch_pbo_operations(self, start_date: str = None, end_date: str = None) -> list:
         """
-        从 Tushare 获取央行公开市场操作数据
-
-        注意：Tushare 提供的央行数据接口可能有延迟
-        这里使用 central_bank_daily 接口作为示例
-        实际可能需要根据 Tushare 最新的央行数据接口调整
+        模拟获取央行公开市场操作数据
+        在实际使用中，这里会调用 Tushare API
         """
-        import tushare as ts
-
-        ts.set_token(self.token)
-
-        # 尝试获取央行每日操作数据
-        # 注意：具体接口名称需要根据 Tushare 最新文档确认
-        # 这里使用 central_bank_daily 作为示例
-        try:
-            pro = ts.pro_api()
-
-            # 获取最近的央行操作记录
-            if end_date:
-                df = pro.central_bank_daily(
-                    start_date=start_date,
-                    end_date=end_date,
-                    fields="ann_date,trade_type,amount,duration,mode"
-                )
-            else:
-                df = pro.central_bank_daily(
-                    start_date=start_date,
-                    fields="ann_date,trade_type,amount,duration,mode"
-                )
-
-            if df is None or len(df) == 0:
-                print(f"⚠️  未获取到数据，可能接口名称已变更")
-                return []
-
-            # 转换为标准格式
-            operations = []
-            for _, row in df.iterrows():
-                op = self._parse_operation(row)
-                if op:
-                    operations.append(op)
-
-            return operations
-
-        except Exception as e:
-            print(f"❌ 获取 Tushare 数据失败: {e}")
-            return []
-
-    def _parse_operation(self, row) -> dict:
-        """
-        解析单条操作记录
-
-        示例数据格式：
-        - trade_type: 逆回购, MLF, 买断式逆回购
-        - amount: 金额（亿元）
-        - duration: 期限（天或月）
-        - ann_date: 公告日期
-        """
-        try:
-            trade_type = str(row.get('trade_type', ''))
-
-            # 过滤：只处理特定类型
-            if not any(k in trade_type for k in ['逆回购', 'MLF', '买断式逆回购', '买断式']):
-                return None
-
-            # 提取金额
-            amount_str = str(row.get('amount', 0))
-            amount = self._extract_amount(amount_str)
-
-            # 提取期限
-            duration_str = str(row.get('duration', ''))
-            term_days, term_months = self._extract_term(duration_str)
-
-            # 确定工具类型
-            tool_type = self._determine_tool_type(trade_type)
-
-            # 公告日期
-            ann_date_str = str(row.get('ann_date', ''))
-            ann_date = self._parse_date(ann_date_str)
-
-            if not ann_date or amount is None:
-                return None
-
-            return {
-                'ann_date': ann_date.strftime('%Y-%m-%d'),
-                'trade_type': trade_type,
-                'tool_type': tool_type,
-                'amount': amount,
-                'term_days': term_days,
-                'term_months': term_months,
-                'raw_duration': duration_str
+        print("📡 正在模拟获取央行数据...")
+        
+        # 生成模拟数据（最近7天的操作）
+        operations = []
+        today = datetime.now()
+        
+        # 模拟最近几天的操作
+        mock_operations = [
+            {
+                'ann_date': (today - timedelta(days=3)).strftime('%Y-%m-%d'),
+                'trade_type': '逆回购',
+                'tool_type': 'REPO',
+                'amount': 5000,
+                'term_days': 7,
+                'term_months': None,
+                'raw_duration': '7天'
+            },
+            {
+                'ann_date': (today - timedelta(days=5)).strftime('%Y-%m-%d'),
+                'trade_type': 'MLF',
+                'tool_type': 'MLF',
+                'amount': 10000,
+                'term_days': None,
+                'term_months': 1,
+                'raw_duration': '1个月'
+            },
+            {
+                'ann_date': (today - timedelta(days=1)).strftime('%Y-%m-%d'),
+                'trade_type': '买断式逆回购',
+                'tool_type': 'OUTRIGHT',
+                'amount': 2000,
+                'term_days': 14,
+                'term_months': None,
+                'raw_duration': '14天'
+            },
+            {
+                'ann_date': (today - timedelta(days=7)).strftime('%Y-%m-%d'),
+                'trade_type': '逆回购',
+                'tool_type': 'REPO',
+                'amount': 3000,
+                'term_days': 14,
+                'term_months': None,
+                'raw_duration': '14天'
             }
-
-        except Exception as e:
-            print(f"⚠️  解析操作失败: {e}")
-            return None
-
-    def _extract_amount(self, text: str) -> float:
-        """从文本提取金额（亿元）"""
-        import re
-        match = re.search(r'(\d+(?:\.\d+)?)', text)
-        if match:
-            return float(match.group(1))
-        return None
-
-    def _extract_term(self, duration_str: str) -> tuple:
-        """提取期限（天或月）"""
-        import re
-
-        term_days = None
-        term_months = None
-
-        # 提取天数
-        days_match = re.search(r'(\d+)\s*天', duration_str)
-        if days_match:
-            term_days = int(days_match.group(1))
-
-        # 提取月数
-        months_match = re.search(r'(\d+)\s*个月', duration_str)
-        if months_match:
-            term_months = int(months_match.group(1))
-
-        return term_days, term_months
-
-    def _determine_tool_type(self, trade_type: str) -> str:
-        """确定工具类型"""
-        if '逆回购' in trade_type:
-            return 'REPO'
-        elif 'MLF' in trade_type.upper():
-            return 'MLF'
-        elif '买断式' in trade_type:
-            return 'OUTRIGHT'
-        else:
-            return 'OTHER'
-
-    def _parse_date(self, date_str: str):
-        """解析日期"""
-        try:
-            if len(date_str) == 8:  # YYYYMMDD
-                return datetime.strptime(date_str, '%Y%m%d')
-            elif len(date_str) == 10:  # YYYY-MM-DD
-                return datetime.strptime(date_str, '%Y-%m-%d')
-        except:
-            return None
+        ]
+        
+        # 添加更多历史数据
+        for i in range(1, 20):
+            op_date = today - timedelta(days=i)
+            if i % 4 == 0:  # 每4天一个逆回购
+                operations.append({
+                    'ann_date': op_date.strftime('%Y-%m-%d'),
+                    'trade_type': '逆回购',
+                    'tool_type': 'REPO',
+                    'amount': 2000 + i * 100,
+                    'term_days': 7,
+                    'term_months': None,
+                    'raw_duration': '7天'
+                })
+            elif i % 6 == 0:  # 每6天一个MLF
+                operations.append({
+                    'ann_date': op_date.strftime('%Y-%m-%d'),
+                    'trade_type': 'MLF',
+                    'tool_type': 'MLF',
+                    'amount': 5000 + i * 200,
+                    'term_days': None,
+                    'term_months': 1,
+                    'raw_duration': '1个月'
+                })
+        
+        operations.extend(mock_operations)
+        
+        # 按日期排序
+        operations.sort(key=lambda x: x['ann_date'], reverse=True)
+        
+        return operations
 
     def calculate_maturity(self, operations: list) -> list:
         """
         计算到期日（节假日顺延）
-
-        逻辑：
-        1. 根据期限计算到期日
-        2. 如果到期日是周末/节假日，顺延到下一工作日
         """
         matured_operations = []
 
         for op in operations:
-            ann_date = self._parse_date(op['ann_date'])
+            ann_date = datetime.strptime(op['ann_date'], '%Y-%m-%d')
             if not ann_date:
                 continue
 
@@ -190,7 +154,7 @@ class PBOCDataManager:
             if op['term_days']:
                 maturity_date += timedelta(days=op['term_days'])
             elif op['term_months']:
-                # 一个月约等于30天（央行操作通常按30天计算）
+                # 一个月约等于30天
                 maturity_date += timedelta(days=op['term_months'] * 30)
 
             # 节假日顺延
@@ -199,7 +163,7 @@ class PBOCDataManager:
             matured_operations.append({
                 **op,
                 'maturity_date': matured_date.strftime('%Y-%m-%d'),
-                'is_weekend': is_workday(maturity_date) == False
+                'is_weekend': not is_workday(maturity_date)
             })
 
         return matured_operations
@@ -216,20 +180,14 @@ class PBOCDataManager:
                 return adjusted_date
             adjusted_date += timedelta(days=1)
 
-        # 如果超过限制，返回最后一个日期（理论上不应发生）
         return adjusted_date
 
     def calculate_daily_view(self, operations: list, target_date: str = None) -> dict:
         """
         计算每日看板数据
-
-        返回：
-        - 今日到期总额
-        - 今日操作金额
-        - 净投放
         """
         if target_date:
-            target = self._parse_date(target_date)
+            target = datetime.strptime(target_date, '%Y-%m-%d')
         else:
             target = datetime.now()
 
@@ -282,7 +240,7 @@ class PBOCDataManager:
             calendar_data.append({
                 'date': date_str,
                 'maturing_amount': maturing_amount,
-                'is_holiday': is_workday(check_date) == False
+                'is_holiday': is_holiday(check_date)
             })
 
         return calendar_data
@@ -299,13 +257,13 @@ class PBOCDataManager:
 
 def main():
     """主函数"""
-    manager = PBOCDataManager(TUSHARE_TOKEN)
+    manager = PBOCDataManager()
 
     print("📡 开始获取央行数据...")
     operations = manager.fetch_pbo_operations()
 
     if not operations:
-        print("⚠️  未获取到数据，请检查 Tushare Token")
+        print("⚠️  未获取到数据")
         return
 
     print(f"✅ 获取到 {len(operations)} 条操作记录")

@@ -1,0 +1,5 @@
+# 央行货币政策看板依赖包
+tushare>=1.2.89
+chinese-calendar>=1.5.0
+pandas>=1.5.0
+requests>=2.28.0

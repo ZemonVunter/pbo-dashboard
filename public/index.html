@@ -429,7 +429,7 @@
     </div>
 
     <script>
-        const { createApp, ref, onMounted, computed } = Vue;
+        const { createApp, ref, onMounted, computed, onUnmounted } = Vue;
 
         createApp({
             setup() {
@@ -582,8 +582,47 @@
 
                 const maturingAmount = computed(() => todayView.value.maturing_amount || 0);
 
+                // 自动刷新相关
+                const autoRefresh = ref(false);
+                const refreshInterval = ref(null);
+                const nextRefreshTime = ref('');
+
+                const toggleAutoRefresh = (enabled) => {
+                    if (enabled) {
+                        startAutoRefresh();
+                    } else {
+                        stopAutoRefresh();
+                    }
+                };
+
+                const startAutoRefresh = () => {
+                    // 设置60分钟刷新
+                    refreshInterval.value = setInterval(() => {
+                        fetchData();
+                        updateNextRefreshTime();
+                    }, 60 * 60 * 1000); // 60分钟
+                    
+                    updateNextRefreshTime();
+                };
+
+                const stopAutoRefresh = () => {
+                    if (refreshInterval.value) {
+                        clearInterval(refreshInterval.value);
+                        refreshInterval.value = null;
+                    }
+                };
+
+                const updateNextRefreshTime = () => {
+                    const nextTime = new Date(Date.now() + 60 * 60 * 1000);
+                    nextRefreshTime.value = nextTime.toLocaleTimeString('zh-CN', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                };
+
                 onMounted(() => {
                     fetchData();
+                    updateNextRefreshTime();
 
                     // 响应式图表
                     window.addEventListener('resize', () => {
@@ -591,6 +630,10 @@
                             flowChart.resize();
                         }
                     });
+                });
+
+                onUnmounted(() => {
+                    stopAutoRefresh();
                 });
 
                 return {
@@ -605,7 +648,10 @@
                     formatDate,
                     getToolType,
                     isNearMaturity,
-                    maturingAmount
+                    maturingAmount,
+                    autoRefresh,
+                    nextRefreshTime,
+                    toggleAutoRefresh
                 };
             }
         }).use(ElementPlus).mount('#app');
