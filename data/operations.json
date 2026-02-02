@@ -1,12 +1,13 @@
 {
-  "last_updated": "2026-02-02 02:16:39",
+  "last_updated": "2026-02-02 02:55:35",
   "today_view": {
     "date": "2026-02-02",
     "maturing_amount": 0,
     "injection_amount": 0,
     "net_injection": 0,
     "maturing_ops": [],
-    "injection_ops": []
+    "injection_ops": [],
+    "data_source": "mock"
   },
   "calendar_view": [
     {
@@ -46,7 +47,7 @@
     },
     {
       "date": "2026-02-09",
-      "maturing_amount": 3000,
+      "maturing_amount": 0,
       "is_holiday": false
     },
     {
@@ -81,7 +82,7 @@
     },
     {
       "date": "2026-02-16",
-      "maturing_amount": 10600,
+      "maturing_amount": 2000,
       "is_holiday": false
     },
     {
@@ -163,113 +164,95 @@
   "all_operations": [
     {
       "ann_date": "2026-02-01",
+      "trade_date": "20260201",
       "trade_type": "买断式逆回购",
       "tool_type": "OUTRIGHT",
       "amount": 2000,
       "term_days": 14,
       "term_months": null,
       "raw_duration": "14天",
+      "source": "mock",
       "maturity_date": "2026-02-16",
       "is_weekend": true
     },
     {
       "ann_date": "2026-01-30",
+      "trade_date": "20260130",
       "trade_type": "逆回购",
       "tool_type": "REPO",
       "amount": 5000,
       "term_days": 7,
       "term_months": null,
       "raw_duration": "7天",
+      "source": "mock",
       "maturity_date": "2026-02-06",
       "is_weekend": false
     },
     {
       "ann_date": "2026-01-29",
+      "trade_date": "20260129",
       "trade_type": "逆回购",
       "tool_type": "REPO",
       "amount": 2400,
       "term_days": 7,
       "term_months": null,
       "raw_duration": "7天",
+      "source": "mock",
       "maturity_date": "2026-02-05",
       "is_weekend": false
     },
     {
       "ann_date": "2026-01-28",
+      "trade_date": "20260128",
       "trade_type": "MLF",
       "tool_type": "MLF",
       "amount": 10000,
       "term_days": null,
       "term_months": 1,
       "raw_duration": "1个月",
+      "source": "mock",
       "maturity_date": "2026-02-27",
       "is_weekend": false
     },
     {
       "ann_date": "2026-01-27",
+      "trade_date": "20260127",
       "trade_type": "MLF",
       "tool_type": "MLF",
       "amount": 6200,
       "term_days": null,
       "term_months": 1,
       "raw_duration": "1个月",
+      "source": "mock",
       "maturity_date": "2026-02-26",
       "is_weekend": false
     },
     {
-      "ann_date": "2026-01-26",
-      "trade_type": "逆回购",
-      "tool_type": "REPO",
-      "amount": 3000,
-      "term_days": 14,
-      "term_months": null,
-      "raw_duration": "14天",
-      "maturity_date": "2026-02-09",
-      "is_weekend": false
-    },
-    {
       "ann_date": "2026-01-25",
+      "trade_date": "20260125",
       "trade_type": "逆回购",
       "tool_type": "REPO",
       "amount": 2800,
       "term_days": 7,
       "term_months": null,
       "raw_duration": "7天",
+      "source": "mock",
       "maturity_date": "2026-02-04",
       "is_weekend": true
     },
     {
       "ann_date": "2026-01-21",
+      "trade_date": "20260121",
       "trade_type": "逆回购",
       "tool_type": "REPO",
       "amount": 3200,
       "term_days": 7,
       "term_months": null,
       "raw_duration": "7天",
+      "source": "mock",
       "maturity_date": "2026-02-04",
       "is_weekend": true
-    },
-    {
-      "ann_date": "2026-01-17",
-      "trade_type": "逆回购",
-      "tool_type": "REPO",
-      "amount": 3600,
-      "term_days": 7,
-      "term_months": null,
-      "raw_duration": "7天",
-      "maturity_date": "2026-01-26",
-      "is_weekend": true
-    },
-    {
-      "ann_date": "2026-01-15",
-      "trade_type": "MLF",
-      "tool_type": "MLF",
-      "amount": 8600,
-      "term_days": null,
-      "term_months": 1,
-      "raw_duration": "1个月",
-      "maturity_date": "2026-02-16",
-      "is_weekend": true
     }
-  ]
+  ],
+  "data_status": "mock"
 }
