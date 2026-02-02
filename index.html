@@ -167,6 +167,15 @@
                 <div style="font-size: 3rem; margin-bottom: 16px;">❌</div>
                 <h2>加载失败</h2>
                 <p>{{ error }}</p>
+                <div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <p><strong>🔍 故障排除：</strong></p>
+                    <ol>
+                        <li>检查网络连接是否正常</li>
+                        <li>尝试刷新页面 (F5)</li>
+                        <li>清除浏览器缓存</li>
+                        <li>检查 GitHub Pages 是否正常访问</li>
+                    </ol>
+                </div>
                 <el-button type="primary" @click="fetchData" style="margin-top: 20px;">
                     重试
                 </el-button>
@@ -321,11 +330,32 @@
                     error.value = '';
 
                     try {
-                        const response = await fetch('data/operations.json');
-                        if (!response.ok) {
-                            throw new Error('数据加载失败');
+                        // 尝试多个路径
+                        const possiblePaths = [
+                            './data/operations.json',
+                            'data/operations.json',
+                            '/data/operations.json'
+                        ];
+                        
+                        let data = null;
+                        let lastError = null;
+                        
+                        for (const path of possiblePaths) {
+                            try {
+                                const response = await fetch(path);
+                                if (response.ok) {
+                                    data = await response.json();
+                                    break;
+                                }
+                                lastError = `路径 ${path} 返回 ${response.status}`;
+                            } catch (err) {
+                                lastError = `路径 ${path} 加载失败: ${err.message}`;
+                            }
                         }
-                        const data = await response.json();
+                        
+                        if (!data) {
+                            throw new Error(lastError || '所有路径都失败了');
+                        }
 
                         todayView.value = data.today_view || {};
                         allOperations.value = data.all_operations || [];
@@ -333,7 +363,7 @@
 
                     } catch (err) {
                         console.error('加载数据失败:', err);
-                        error.value = '加载数据失败，请检查网络连接';
+                        error.value = `加载数据失败: ${err.message}`;
                     } finally {
                         loading.value = false;
                     }
