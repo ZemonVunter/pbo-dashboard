@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>数据测试页面</title>
+</head>
+<body>
+    <h1>数据测试页面</h1>
+    <p>正在测试数据加载...</p>
+    
+    <script>
+        async function testData() {
+            console.log('开始测试数据加载...');
+            
+            const paths = [
+                './data/operations.json',
+                'data/operations.json',
+                '/data/operations.json'
+            ];
+            
+            for (const path of paths) {
+                try {
+                    console.log(`尝试路径: ${path}`);
+                    const response = await fetch(path);
+                    console.log(`响应状态: ${response.status}`);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log('数据加载成功:', data);
+                        document.body.innerHTML += `<div style="color: green;">✅ ${path} 加载成功</div>`;
+                        document.body.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                        return;
+                    } else {
+                        console.log(`路径 ${path} 返回 ${response.status}`);
+                        document.body.innerHTML += `<div style="color: orange;">⚠️ ${path} 返回 ${response.status}</div>`;
+                    }
+                } catch (error) {
+                    console.log(`路径 ${path} 加载失败:`, error);
+                    document.body.innerHTML += `<div style="color: red;">❌ ${path} 加载失败: ${error.message}</div>`;
+                }
+            }
+            
+            document.body.innerHTML += '<div style="color: red;">❌ 所有路径都失败了</div>';
+        }
+        
+        testData();
+    </script>
+</body>
+</html>
