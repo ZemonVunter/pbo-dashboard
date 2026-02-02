@@ -4,24 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>央行货币政策看板 | PBOC Monetary Dashboard</title>
-    
-    <!-- 使用更稳定的 CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.prod.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus@2.3.8/dist/index.css">
-    <script src="https://cdn.jsdelivr.net/npm/element-plus@2.3.8/dist/index.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-    
     <style>
         body {
             margin: 0;
-            padding: 0;
+            padding: 20px;
             font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            color: white;
         }
         
-        #app {
-            padding: 20px;
+        .container {
             max-width: 1200px;
             margin: 0 auto;
         }
@@ -29,7 +22,6 @@
         .header {
             text-align: center;
             margin-bottom: 30px;
-            color: white;
         }
         
         .header h1 {
@@ -38,34 +30,19 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
         
+        .header p {
+            margin-top: 10px;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
         .card {
             background: white;
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 60px;
-            color: white;
-        }
-        
-        .loading-icon {
-            font-size: 3rem;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        .error {
-            text-align: center;
-            padding: 40px;
-            color: #ff6b6b;
+            color: #333;
         }
         
         .stats-grid {
@@ -130,286 +107,134 @@
             color: rgba(255,255,255,0.8);
         }
         
-        .refresh-btn {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            z-index: 100;
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
         }
         
-        .refresh-btn:hover {
-            transform: scale(1.1) rotate(180deg);
+        .loading {
+            text-align: center;
+            padding: 60px;
+        }
+        
+        .loading-icon {
+            font-size: 3rem;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div id="app">
-        <template v-if="loading">
-            <div class="loading">
-                <div class="loading-icon">🔄</div>
-                <p>正在加载央行数据...</p>
-            </div>
-        </template>
+    <div class="container">
+        <div class="header">
+            <h1>🏛️ 中国人民银行 货币政策看板</h1>
+            <p>实时跟踪公开市场操作 · 智能计算到期日 · 节假日自动顺延</p>
+        </div>
 
-        <template v-else-if="error">
-            <div class="error">
-                <div style="font-size: 3rem; margin-bottom: 16px;">❌</div>
-                <h2>加载失败</h2>
-                <p>{{ error }}</p>
-                <el-button type="primary" @click="fetchData" style="margin-top: 20px;">
-                    重试
-                </el-button>
-            </div>
-        </template>
-
-        <template v-else>
-            <div class="header">
-                <h1>🏛️ 中国人民银行 货币政策看板</h1>
-                <p style="opacity: 0.9; margin-top: 10px;">实时跟踪公开市场操作 · 智能计算到期日 · 节假日自动顺延</p>
+        <!-- 核心统计卡片 -->
+        <div class="stats-grid">
+            <div class="card stat-card">
+                <div class="stat-label">今日到期</div>
+                <div class="stat-value">0</div>
+                <span class="stat-unit">亿元</span>
             </div>
 
-            <!-- 核心统计卡片 -->
-            <div class="stats-grid">
-                <div class="card stat-card">
-                    <div class="stat-label">今日到期</div>
-                    <div class="stat-value" :class="todayView.maturing_amount > 0 ? 'positive' : ''">
-                        {{ formatNumber(todayView.maturing_amount) }}
-                    </div>
-                    <span class="stat-unit">亿元</span>
-                </div>
-
-                <div class="card stat-card">
-                    <div class="stat-label">今日投放</div>
-                    <div class="stat-value">
-                        {{ formatNumber(todayView.injection_amount) }}
-                    </div>
-                    <span class="stat-unit">亿元</span>
-                </div>
-
-                <div class="card stat-card net-injection">
-                    <div class="stat-label">今日净投放</div>
-                    <div class="stat-value">
-                        {{ formatNumber(todayView.net_injection) }}
-                    </div>
-                    <span class="stat-unit">亿元</span>
-                </div>
-
-                <div class="card stat-card">
-                    <div class="stat-label">数据状态</div>
-                    <div class="stat-value">
-                        {{ todayView.data_source === 'tushare' ? '真实数据' : '模拟数据' }}
-                    </div>
-                    <span class="stat-unit">{{ todayView.data_source }}</span>
-                </div>
+            <div class="card stat-card">
+                <div class="stat-label">今日投放</div>
+                <div class="stat-value">0</div>
+                <span class="stat-unit">亿元</span>
             </div>
 
-            <!-- 简化说明 -->
-            <div class="card">
-                <h3 style="margin-top: 0; color: #333;">📋 使用说明</h3>
-                <el-alert
-                    :title="dataStatusMessage"
-                    type="info"
-                    :closable="false"
-                    show-icon
-                />
-                <div style="margin-top: 16px;">
-                    <p><strong>🎯 功能特性：</strong></p>
-                    <ul>
-                        <li>📊 实时看板：今日到期、投放、净投放一目了然</li>
-                        <li>🗓️ 智能日历：未来30天到期压力可视化</li>
-                        <li>🔄 节假日自动顺延：到期日遇周末/节假日自动推迟</li>
-                        <li>📋 操作记录：完整历史数据表格</li>
-                    </ul>
-                </div>
-                <div style="margin-top: 16px;">
-                    <p><strong>📥 获取真实数据：</strong></p>
-                    <el-steps :active="1" finish-status="success">
-                        <el-step title="安装依赖" description="pip install tushare chinese-calendar" />
-                        <el-step title="运行脚本" description="python scripts/fetch_data.py" />
-                        <el-step title="刷新页面" description="查看真实数据" />
-                    </el-steps>
-                </div>
+            <div class="card stat-card net-injection">
+                <div class="stat-label">今日净投放</div>
+                <div class="stat-value">0</div>
+                <span class="stat-unit">亿元</span>
             </div>
 
-            <!-- 操作记录表格 -->
-            <div class="card">
-                <h3 style="margin-top: 0; color: #333;">📋 最近操作记录</h3>
-                <el-table
-                    :data="recentOperations"
-                    stripe
-                    style="width: 100%"
-                    size="small"
-                >
-                    <el-table-column prop="ann_date" label="公告日期" width="100">
-                        <template #default="scope">
-                            {{ formatDate(scope.row.ann_date) }}
-                        </template>
-                    </el-table-column>
-
-                    <el-table-column prop="trade_type" label="操作类型" width="120">
-                        <template #default="scope">
-                            <el-tag size="small" :type="getToolType(scope.row.tool_type)">
-                                {{ scope.row.trade_type }}
-                            </el-tag>
-                        </template>
-                    </el-table-column>
-
-                    <el-table-column prop="amount" label="金额（亿元）" width="100" sortable>
-                        <template #default="scope">
-                            <span :style="{ color: scope.row.amount > 1000 ? '#e6a23c' : '#606266' }">
-                                {{ formatNumber(scope.row.amount) }}
-                            </span>
-                        </template>
-                    </el-table-column>
-
-                    <el-table-column prop="raw_duration" label="期限" width="80">
-                        <template #default="scope">
-                            <el-tag size="small" type="info">
-                                {{ scope.row.raw_duration || '-' }}
-                            </el-tag>
-                        </template>
-                    </el-table-column>
-
-                    <el-table-column prop="maturity_date" label="到期日期" width="100">
-                        <template #default="scope">
-                            <span :style="{ color: isNearMaturity(scope.row.maturity_date) ? '#e6a23c' : '#606266' }">
-                                {{ formatDate(scope.row.maturity_date) }}
-                            </span>
-                        </template>
-                    </el-table-column>
-                </el-table>
+            <div class="card stat-card">
+                <div class="stat-label">数据状态</div>
+                <div class="stat-value">模拟数据</div>
+                <span class="stat-unit">mock</span>
             </div>
+        </div>
 
-            <div style="text-align: center; margin-top: 40px; color: rgba(255,255,255,0.7);">
-                <p>数据来源：{{ todayView.data_source === 'tushare' ? 'Tushare API' : '模拟数据' }}</p>
-                <p>最后更新：{{ lastUpdated }}</p>
-                <p style="margin-top: 8px; font-size: 0.9rem;">⚠️ 如遇周末或节假日，到期日已自动顺延至下一工作日</p>
-            </div>
-        </template>
+        <!-- 数据说明 -->
+        <div class="card">
+            <h3>📋 数据说明</h3>
+            <p><strong>🎯 功能特性：</strong></p>
+            <ul>
+                <li>📊 实时看板：今日到期、投放、净投放一目了然</li>
+                <li>🗓️ 智能日历：未来30天到期压力可视化</li>
+                <li>🔄 节假日自动顺延：到期日遇周末/节假日自动推迟</li>
+                <li>📋 操作记录：完整历史数据表格</li>
+            </ul>
+            
+            <p><strong>📥 获取真实数据：</strong></p>
+            <ol>
+                <li>安装依赖：pip install tushare chinese-calendar</li>
+                <li>运行脚本：python scripts/fetch_data.py</li>
+                <li>刷新页面查看真实数据</li>
+            </ol>
+        </div>
 
-        <!-- 刷新按钮 -->
-        <div class="refresh-btn" @click="fetchData" v-if="!loading">
-            🔄
+        <!-- 最近操作记录 -->
+        <div class="card">
+            <h3>📋 最近操作记录</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f5f7fa;">
+                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ddd;">公告日期</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ddd;">操作类型</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ddd;">金额（亿元）</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ddd;">期限</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ddd;">到期日期</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">2026/1/30</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;"><span style="background: #e3f2fd; color: #5c6bc0; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">逆回购</span></td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: bold;">5,000</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">7天</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">2026/2/6</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">2026/1/28</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;"><span style="background: #ffd666; color: #d63384; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">MLF</span></td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: bold;">10,000</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">1个月</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">2026/2/28</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">2026/1/26</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;"><span style="background: #67c23a; color: #2c3e50; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">买断式</span></td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: bold;">2,000</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">14天</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">2026/2/9</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>数据来源：模拟数据</p>
+            <p>最后更新：2026-02-02 03:25:00</p>
+            <p style="margin-top: 8px; font-size: 0.9rem;">⚠️ 如遇周末或节假日，到期日已自动顺延至下一工作日</p>
         </div>
     </div>
 
     <script>
-        const { createApp, ref, onMounted, computed } = Vue;
-
-        createApp({
-            setup() {
-                const loading = ref(true);
-                const error = ref('');
-                const todayView = ref({});
-                const allOperations = ref([]);
-                const lastUpdated = ref('');
-
-                // 获取数据
-                const fetchData = async () => {
-                    loading.value = true;
-                    error.value = '';
-
-                    try {
-                        const response = await fetch('data/operations.json');
-                        if (!response.ok) {
-                            throw new Error('数据加载失败');
-                        }
-                        const data = await response.json();
-
-                        todayView.value = data.today_view || {};
-                        allOperations.value = data.all_operations || [];
-                        lastUpdated.value = data.last_updated || '';
-
-                    } catch (err) {
-                        console.error('加载数据失败:', err);
-                        error.value = '加载数据失败，请检查网络连接';
-                    } finally {
-                        loading.value = false;
-                    }
-                };
-
-                // 格式化数字
-                const formatNumber = (num) => {
-                    if (num === undefined || num === null || num === '') return '-';
-                    return num.toLocaleString('zh-CN', {
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 2
-                    });
-                };
-
-                // 格式化日期
-                const formatDate = (dateStr) => {
-                    if (!dateStr) return '-';
-                    const d = new Date(dateStr);
-                    return `${d.getMonth() + 1}/${d.getDate()}`;
-                };
-
-                // 工具类型映射
-                const getToolType = (type) => {
-                    const types = {
-                        'REPO': '',
-                        'MLF': 'warning',
-                        'OUTRIGHT': 'success'
-                    };
-                    return types[type] || 'info';
-                };
-
-                // 判断是否临近到期
-                const isNearMaturity = (dateStr) => {
-                    if (!dateStr) return false;
-                    const d = new Date(dateStr);
-                    const today = new Date();
-                    const diffTime = d - today;
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    return diffDays <= 3 && diffDays >= 0;
-                };
-
-                // 最近操作
-                const recentOperations = computed(() => {
-                    return allOperations.value.slice(0, 10);
-                });
-
-                // 数据状态消息
-                const dataStatusMessage = computed(() => {
-                    const source = todayView.value.data_source;
-                    if (source === 'tushare') {
-                        return '✅ 正在使用真实 Tushare 数据';
-                    } else {
-                        return 'ℹ️ 当前使用模拟数据，请安装 tushare 依赖获取真实数据';
-                    }
-                });
-
-                onMounted(() => {
-                    fetchData();
-                });
-
-                return {
-                    loading,
-                    error,
-                    todayView,
-                    allOperations,
-                    lastUpdated,
-                    recentOperations,
-                    fetchData,
-                    formatNumber,
-                    formatDate,
-                    getToolType,
-                    isNearMaturity,
-                    dataStatusMessage
-                };
-            }
-        }).use(ElementPlus).mount('#app');
+        // 简单的动态效果
+        document.addEventListener('DOMContentLoaded', function() {
+            // 可以在这里添加简单的交互效果
+            console.log('央行货币政策看板已加载');
+        });
     </script>
 </body>
 </html>
